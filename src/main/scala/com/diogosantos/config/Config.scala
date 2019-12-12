@@ -1,7 +1,8 @@
 package com.diogosantos.config
 
 import pureconfig.loadConfigOrThrow
-import zio.{RIO, Task, ZIO}
+import zio.{TaskR, Task, ZIO}
+import pureconfig.generic.auto._
 
 
 case class Config(apiConfig: ApiConfig, dbConfig: DbConfig)
@@ -18,7 +19,7 @@ trait Configuration extends Serializable {
 object Configuration {
 
   trait Service[R] {
-    val load: RIO[R, Config]
+    val load: TaskR[R, Config]
   }
 
   trait Live extends Configuration {
@@ -28,11 +29,11 @@ object Configuration {
   }
 
   // for testing purposes
-  trait Test extends Configuration {
-    val config: Service[Any] = new Service[Any] {
-      override val load: Task[Config] = ZIO.effectTotal(Config(???, ???))
-    }
-  }
+//  trait Test extends Configuration {
+//    val config: Service[Any] = new Service[Any] {
+//      override val load: Task[Config] = ZIO.effectTotal(Config(???, ???))
+//    }
+//  }
 
 }
 

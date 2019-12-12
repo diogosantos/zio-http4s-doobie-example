@@ -1,10 +1,15 @@
 package com.diogosantos.db
 
+import com.diogosantos.config.DbConfig
 import com.diogosantos.model.{User, UserId, UserNotFound}
+import doobie.h2.H2Transactor
 import doobie.implicits._
 import doobie.{Query0, Transactor, Update0}
 import zio.interop.catz._
-import zio.{RIO, Task}
+import zio._
+import zio.blocking.Blocking
+
+import scala.concurrent.ExecutionContext
 
 
 trait Persistence extends Serializable {
@@ -14,13 +19,13 @@ trait Persistence extends Serializable {
 object Persistence {
 
   trait Service[R] {
-    val createTable: RIO[R, Unit]
+    val createTable: TaskR[R, Unit]
 
-    def get(id: UserId): RIO[R, User]
+    def get(id: UserId): TaskR[R, User]
 
-    def create(user: User): RIO[R, User]
+    def create(user: User): TaskR[R, User]
 
-    def delete(id: UserId): RIO[R, Unit]
+    def delete(id: UserId): TaskR[R, Unit]
   }
 
   trait Live extends Persistence {
@@ -70,5 +75,7 @@ object Persistence {
     }
 
   }
+
+
 
 }

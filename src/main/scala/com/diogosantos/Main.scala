@@ -5,7 +5,7 @@ import zio.{App, ZIO}
 
 object Main extends App {
 
-  override def run(args: List[String]): ZIO[zio.ZEnv, Nothing, Int] =
+  override def run(args: List[String]): ZIO[Main.Environment, Nothing, Int] =
     appLogic.fold(_ => 1, _ => 0)
 
   val appLogic =
