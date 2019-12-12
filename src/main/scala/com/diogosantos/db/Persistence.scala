@@ -5,9 +5,8 @@ import com.diogosantos.model.{User, UserId, UserNotFound}
 import doobie.h2.H2Transactor
 import doobie.implicits._
 import doobie.{Query0, Transactor, Update0}
-import zio.interop.catz._
 import zio._
-import zio.blocking.Blocking
+import zio.interop.catz._
 
 import scala.concurrent.ExecutionContext
 
@@ -76,6 +75,44 @@ object Persistence {
 
   }
 
+  def mkTransactor(
+                    conf: DbConfig,
+                    connectEC: ExecutionContext,
+                    transactEC: ExecutionContext
+                  ): Managed[Throwable, H2Transactor[Task]] = {
+
+    val xa = H2Transactor
+      .newH2Transactor[Task](
+      conf.url,
+      conf.user,
+      conf.password,
+      connectEC,
+      transactEC)
+
+    val res = xa.allocated.map {
+      case (transactor, cleanupM) =>
+        Reservation(ZIO.succeed(transactor), cleanupM.orDie)
+    }.uninterruptible
+
+    Managed(res)
+  }
+
+  case class Test(users: Ref[Vector[User]]) extends Persistence {
+    override val userPersistence: Service[Any] = new Service[Any] {
+      val createTable: Task[Unit] =
+        Ref.make(Vector.empty[User]).unit
+
+      def get(id: UserId): Task[User] =
+        users.get.flatMap(users => Task.require(UserNotFound(id))(
+          Task.succeed(users.find(_.id == id))))
+
+      def create(user: User): Task[User] =
+        users.update(_ :+ user).map(_ => user)
+
+      def delete(id: UserId): Task[Unit] =
+        users.update(users => users.filterNot(_.id == id)).unit
+    }
+  }
 
 
 }
