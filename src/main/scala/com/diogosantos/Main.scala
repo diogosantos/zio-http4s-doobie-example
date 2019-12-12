@@ -1,4 +1,6 @@
-import zio.console._
+package com.diogosantos
+
+import zio.console.{getStrLn, putStrLn}
 import zio.{App, ZIO}
 
 object Main extends App {
