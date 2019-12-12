@@ -29,4 +29,6 @@ libraryDependencies ++= Seq(
 
   "io.circe" %% "circe-generic" % CirceVersion,
   "io.circe" %% "circe-generic-extras" % CirceVersionExtras,
+
+  "org.slf4j" % "slf4j-log4j12" % "1.7.26",
 )

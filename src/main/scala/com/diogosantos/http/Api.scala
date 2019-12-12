@@ -4,14 +4,14 @@ import com.diogosantos.db.{Persistence, _}
 import com.diogosantos.model.{User, UserId}
 import io.circe.generic.auto._
 import io.circe.{Decoder, Encoder}
-import org.http4s.circe.{jsonEncoderOf, jsonOf}
+import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes}
-import zio.TaskR
+import zio._
 import zio.interop.catz._
 
 
-final class Api[R <: Persistence](rootUrl: String) {
+final case class Api[R <: Persistence](rootUrl: String) {
 
   type UserTask[A] = TaskR[R, A]
 
@@ -23,11 +23,13 @@ final class Api[R <: Persistence](rootUrl: String) {
 
   import dsl._
 
-  def routes: HttpRoutes[UserTask] = HttpRoutes.of[UserTask] {
+  def route: HttpRoutes[UserTask] = HttpRoutes.of[UserTask] {
     case GET -> Root / IntVar(id) => get(UserId(id)).foldM(_ => NotFound(), Ok(_))
+
     case request@POST -> Root => request.decode[User] { user =>
       Created(create(user))
     }
+
     case DELETE -> Root / IntVar(id) =>
       val userId = UserId(id)
       (get(userId) *> delete(userId)).foldM(_ => NotFound(), Ok(_))

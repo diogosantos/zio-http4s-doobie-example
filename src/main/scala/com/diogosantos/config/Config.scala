@@ -1,7 +1,7 @@
 package com.diogosantos.config
 
 import pureconfig.loadConfigOrThrow
-import zio.{TaskR, Task, ZIO}
+import zio.{Task, TaskR, ZIO}
 import pureconfig.generic.auto._
 
 
@@ -27,6 +27,8 @@ object Configuration {
       override val load: Task[Config] = ZIO.effectTotal(loadConfigOrThrow[Config])
     }
   }
+
+  object Live extends Live
 
   // for testing purposes
 //  trait Test extends Configuration {
